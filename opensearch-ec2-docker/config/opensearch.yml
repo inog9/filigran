@@ -1,0 +1,22 @@
+cluster.name: opencti-search
+network.host: 0.0.0.0
+bootstrap.memory_lock: true
+# OpenCTI reference setting (docker-compose of OpenCTI-Platform/docker)
+thread_pool.search.queue_size: 5000
+
+# TLS with our own CA (certs/ made by make-certs.sh), on HTTP and transport
+plugins.security.ssl.transport.pemcert_filepath: certs/node.pem
+plugins.security.ssl.transport.pemkey_filepath: certs/node-key.pem
+plugins.security.ssl.transport.pemtrustedcas_filepath: certs/root-ca.pem
+plugins.security.ssl.transport.enforce_hostname_verification: false
+plugins.security.ssl.http.enabled: true
+plugins.security.ssl.http.pemcert_filepath: certs/node.pem
+plugins.security.ssl.http.pemkey_filepath: certs/node-key.pem
+plugins.security.ssl.http.pemtrustedcas_filepath: certs/root-ca.pem
+
+# Users and roles come from security/*.yml on the first start
+plugins.security.allow_default_init_securityindex: true
+plugins.security.authcz.admin_dn: ["CN=admin,O=OpenCTI search"]
+plugins.security.nodes_dn: ["CN=opencti-search,O=OpenCTI search"]
+plugins.security.restapi.roles_enabled: ["all_access"]
+plugins.security.audit.type: noop

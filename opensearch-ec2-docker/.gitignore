@@ -1,0 +1,6 @@
+certs/
+.secrets
+security/internal_users.yml
+init-schema.log
+__pycache__/
+migration/init-schema.log

@@ -93,7 +93,7 @@ the `ingest-attachment` plugin that OpenCTI's own test setup installs). It is no
 because OpenSearch runs on another host, with security on, TLS and that plugin: the base stays
 `docker-compose.yml` and only the five `ELASTICSEARCH__*` lines point to the other host.
 
-Setting up that OpenSearch server is not covered here. The bundled `elasticsearch` service is
+Setting up that OpenSearch server: [`../opensearch-ec2-docker/`](../opensearch-ec2-docker/). The bundled `elasticsearch` service is
 left untouched: it still starts, which keeps a way back. To go back to it, delete the five
 `ELASTICSEARCH__*` lines and the `volumes` entry of the platform.
 

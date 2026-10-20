@@ -1,0 +1,70 @@
+# One-off stack that lets OpenCTI create its OpenSearch structure (index templates,
+# ISM policy, ingest pipeline, indices + aliases) and nothing else:
+# ELASTICSEARCH__INTERNAL_INIT_MAPPING_MIGRATION=standard makes the platform exit
+# right after creating the schema, before writing any data. Redis, RabbitMQ and S3
+# here are throwaway (removed with `down -v`); production is never contacted.
+name: opencti-search-init
+services:
+  redis:
+    image: redis:8.10.1
+    healthcheck: { test: ["CMD", "redis-cli", "ping"], interval: 5s, retries: 20 }
+  rabbitmq:
+    image: rabbitmq:4.3-management
+    environment:
+      RABBITMQ_DEFAULT_USER: init
+      RABBITMQ_DEFAULT_PASS: ${INIT_SECRET}
+    healthcheck: { test: ["CMD", "rabbitmq-diagnostics", "-q", "ping"], interval: 10s, retries: 30 }
+  minio:
+    image: pgsty/silo:RELEASE.2026-09-16T00-00-00Z
+    command: server /data
+    environment:
+      MINIO_ROOT_USER: init
+      MINIO_ROOT_PASSWORD: ${INIT_SECRET}
+    healthcheck: { test: ["CMD", "curl", "-f", "http://localhost:9000/minio/health/live"], interval: 5s, retries: 20 }
+  opencti:
+    image: opencti/platform:${OPENCTI_VERSION:-7.260921.0}
+    depends_on:
+      redis: { condition: service_healthy }
+      rabbitmq: { condition: service_healthy }
+      minio: { condition: service_healthy }
+    environment:
+      NODE_OPTIONS: --max-old-space-size=1024
+      APP__PORT: "8080"
+      APP__BASE_URL: http://localhost:8080
+      APP__ADMIN__EMAIL: init@example.invalid
+      APP__ADMIN__PASSWORD: ${INIT_SECRET}
+      APP__ADMIN__TOKEN: ${INIT_TOKEN}
+      APP__ENCRYPTION_KEY: ${INIT_ENCRYPTION_KEY}
+      APP__HEALTH_ACCESS_KEY: ${INIT_TOKEN}
+      REDIS__HOSTNAME: redis
+      MINIO__ENDPOINT: minio
+      MINIO__PORT: "9000"
+      MINIO__USE_SSL: "false"
+      MINIO__ACCESS_KEY: init
+      MINIO__SECRET_KEY: ${INIT_SECRET}
+      RABBITMQ__HOSTNAME: rabbitmq
+      RABBITMQ__PORT: "5672"
+      RABBITMQ__PORT_MANAGEMENT: "15672"
+      RABBITMQ__MANAGEMENT_SSL: "false"
+      RABBITMQ__USERNAME: init
+      RABBITMQ__PASSWORD: ${INIT_SECRET}
+      SMTP__HOSTNAME: localhost
+      PROVIDERS__LOCAL__STRATEGY: LocalStrategy
+      XTM__XTM_ONE_URL: ""
+      XTM__XTM_ONE_TOKEN: ""
+      ELASTICSEARCH__URL: https://opensearch:9200
+      ELASTICSEARCH__ENGINE_SELECTOR: opensearch
+      ELASTICSEARCH__USERNAME: opencti
+      ELASTICSEARCH__PASSWORD: ${OPENCTI_PASSWORD}
+      ELASTICSEARCH__SSL__CA: /certs/root-ca.pem
+      ELASTICSEARCH__NUMBER_OF_REPLICAS: "0"
+      ELASTICSEARCH__INTERNAL_INIT_MAPPING_MIGRATION: standard
+    volumes:
+      - ../../certs/root-ca.pem:/certs/root-ca.pem:ro
+    networks: [default, search]
+    restart: "no"
+
+networks:
+  search:
+    external: true
+    name: opencti-search_default

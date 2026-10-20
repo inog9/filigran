@@ -1,0 +1,13 @@
+_meta:
+  type: "internalusers"
+  config_version: 2
+
+admin:
+  hash: "@ADMIN_HASH@"
+  reserved: true
+  description: "Administrator (break-glass; day-to-day access uses opencti)"
+
+opencti:
+  hash: "@OPENCTI_HASH@"
+  reserved: false
+  description: "OpenCTI platform"

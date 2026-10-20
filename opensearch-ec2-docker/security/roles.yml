@@ -1,0 +1,30 @@
+_meta:
+  type: "roles"
+  config_version: 2
+
+# Permissions listed by OpenCTI: docs.opencti.io > Deployment > Advanced > Rollover >
+# "OpenCTI Integration User Permissions in OpenSearch/ElasticSearch".
+# The indices:* entries must stay in cluster_permissions (OpenCTI fails to start otherwise).
+# Not in that list but required: indices:data/write/reindex, a cluster-level action that
+# OpenCTI uses to move deleted objects to the trash (opencti_deleted_objects); without it
+# every deletion fails with "Reindexing fail ... no permissions for
+# [indices:data/write/reindex]". cluster_composite_ops covers it (plus the _ro set).
+opencti_role:
+  cluster_permissions:
+    - cluster_composite_ops
+    - "indices:data/write/reindex"
+    - cluster_composite_ops_ro
+    - cluster_manage_index_templates
+    - "cluster:admin/ingest/pipeline/put"
+    - "cluster:admin/opendistro/ism/policy/write"
+    - "cluster:monitor/health"
+    - "cluster:monitor/main"
+    - "cluster:monitor/state"
+    - "cluster:monitor/task/get"
+    - "indices:admin/index_template/put"
+    - "indices:data/read/scroll/clear"
+    - "indices:data/read/scroll"
+    - "indices:data/write/bulk"
+  index_permissions:
+    - index_patterns: ["opencti*"]
+      allowed_actions: ["indices_all"]
