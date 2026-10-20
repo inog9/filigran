@@ -1,0 +1,8 @@
+# Secrets and per-server files never go to git; each folder ships *.sample / *.example instead
+.env
+*.env
+certs/
+.secrets
+log/
+__pycache__/
+*.pyc

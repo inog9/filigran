@@ -1,0 +1,234 @@
+# Local changes on top of the unmodified upstream docker-compose.yml.
+# Docker Compose merges this file automatically. Every block below is explained in CHANGES.md.
+#
+#   1. Versions          every OpenCTI image from one variable instead of :latest
+#   2. Platform          OpenCTI itself: URL, memory, Redis, search backend, published ports
+#   3. Worker and S3     one worker, S3 storage on localhost
+#   4. Switched off      the XTM One stack (profile "disabled")
+#   5. Stopped on purpose  connectors that exist but do not start (profile "optional")
+#   6. Added connectors  feeds that upstream does not ship
+
+# Stops with a clear message when OPENCTI_VERSION is missing from .env (otherwise: invalid image name).
+x-require-version: ${OPENCTI_VERSION:?set OPENCTI_VERSION in .env (see .env.local.sample)}
+
+# What every added connector shares.
+x-connector: &connector
+  restart: always
+  depends_on:
+    opencti:
+      condition: service_healthy
+
+x-connector-env: &connector-env
+  OPENCTI_URL: http://opencti:8080
+  OPENCTI_TOKEN: ${OPENCTI_ADMIN_TOKEN}
+
+services:
+  # ---------------------------------------------------------------- 1-3. Platform, worker, S3
+  opencti:
+    image: opencti/platform:${OPENCTI_VERSION}
+    environment:
+      APP__BASE_URL: ${OPENCTI_EXTERNAL_SCHEME}://${OPENCTI_HOST}
+      NODE_OPTIONS: --max-old-space-size=3072
+      REDIS__TRIMMING: "500000"
+      XTM__XTM_ONE_URL: ""
+      XTM__XTM_ONE_TOKEN: ""
+      # Search backend: OpenSearch on another host, TLS with its own CA (see CHANGES.md)
+      ELASTICSEARCH__URL: ${OPENSEARCH_URL}
+      ELASTICSEARCH__ENGINE_SELECTOR: opensearch
+      ELASTICSEARCH__USERNAME: opencti
+      ELASTICSEARCH__PASSWORD: ${OPENSEARCH_OPENCTI_PASSWORD}
+      ELASTICSEARCH__SSL__CA: /certs/opensearch-ca.pem
+    volumes:
+      - ./certs/opensearch-ca.pem:/certs/opensearch-ca.pem:ro
+    ports: !override
+      - 127.0.0.1:${OPENCTI_PORT}:8080
+
+  worker:
+    image: opencti/worker:${OPENCTI_VERSION}
+    deploy:
+      replicas: 1
+
+  minio:
+    image: pgsty/silo:RELEASE.2026-09-16T00-00-00Z
+    ports: !override
+      - 127.0.0.1:9000:9000
+
+  # ---------------------------------------------------------------- 4. XTM One stack: not used
+  pgsql-xtm-one:
+    profiles: [disabled]
+  rsa-key-generator:
+    profiles: [disabled]
+  xtm-composer:
+    profiles: [disabled]
+  xtm-one:
+    profiles: [disabled]
+  xtm-one-worker:
+    profiles: [disabled]
+
+  # ---------------------------------------------------------------- upstream connectors: version only
+  connector-analysis:
+    image: opencti/connector-import-document:${OPENCTI_VERSION}
+  connector-export-file-csv:
+    image: opencti/connector-export-file-csv:${OPENCTI_VERSION}
+  connector-export-file-stix:
+    image: opencti/connector-export-file-stix:${OPENCTI_VERSION}
+  connector-export-file-txt:
+    image: opencti/connector-export-file-txt:${OPENCTI_VERSION}
+  connector-import-document:
+    image: opencti/connector-import-document:${OPENCTI_VERSION}
+  connector-import-external-reference:
+    image: opencti/connector-import-external-reference:${OPENCTI_VERSION}
+  connector-import-file-stix:
+    image: opencti/connector-import-file-stix:${OPENCTI_VERSION}
+  connector-import-file-yara:
+    image: opencti/connector-import-file-yara:${OPENCTI_VERSION}
+
+  # ---------------------------------------------------------------- 5. Upstream connectors kept off
+  # Start one with: docker-compose --profile optional up -d <service>
+  connector-mitre:
+    image: opencti/connector-mitre:${OPENCTI_VERSION}
+    profiles: [optional]
+  connector-opencti:
+    image: opencti/connector-opencti:${OPENCTI_VERSION}
+    profiles: [optional]
+
+  # ---------------------------------------------------------------- 6. Added connectors (running)
+  connector-cisa-known-exploited-vulnerabilities:
+    <<: *connector
+    image: opencti/connector-cisa-known-exploited-vulnerabilities:${OPENCTI_VERSION}
+    environment:
+      <<: *connector-env
+      CONNECTOR_ID: ${CONNECTOR_CISA_KEV_ID}
+      CISA_CATALOG_URL: https://raw.githubusercontent.com/cisagov/kev-data/develop/known_exploited_vulnerabilities.json
+
+  connector-dnstwist:
+    <<: *connector
+    image: opencti/connector-dnstwist:${OPENCTI_VERSION}
+    environment:
+      <<: *connector-env
+      CONNECTOR_ID: ${CONNECTOR_DNSTWIST_ID}
+      CONNECTOR_NAME: DNSTwist
+      CONNECTOR_SCOPE: Domain-Name
+      CONNECTOR_LOG_LEVEL: error
+      CONNECTOR_AUTO: "false"
+      DNS_TWIST_FETCH_REGISTERED: "true"
+      DNS_TWIST_THREADS: "20"
+
+  connector-ransomlook:
+    <<: *connector
+    image: opencti/connector-ransomlook:${OPENCTI_VERSION}
+    environment:
+      <<: *connector-env
+      CONNECTOR_ID: ${CONNECTOR_RANSOMLOOK_ID}
+      CONNECTOR_NAME: RansomLook
+      CONNECTOR_SCOPE: artifact,attack-pattern,cryptocurrency-wallet,ipv4-addr,ipv6-addr,identity,indicator,infrastructure,intrusion-set,threat-actor,incident,malware,report,note,domain-name,url,relationship
+      CONNECTOR_LOG_LEVEL: error
+      CONNECTOR_DURATION_PERIOD: PT1H
+      RANSOMLOOK_LABELS: ransomware,ransomlook
+      RANSOMLOOK_MARKING_DEFINITION: TLP:CLEAR
+      RANSOMLOOK_IMPORT_LEAKS: "true"
+      RANSOMLOOK_CREATE_INDICATORS: "false"
+
+  connector-shodan-internetdb:
+    <<: *connector
+    image: opencti/connector-shodan-internetdb:${OPENCTI_VERSION}
+    environment:
+      <<: *connector-env
+      CONNECTOR_ID: ${CONNECTOR_SHODAN_INTERNETDB_ID}
+      CONNECTOR_NAME: Shodan InternetDB
+      CONNECTOR_SCOPE: IPv4-Addr
+      CONNECTOR_AUTO: "true"
+      CONNECTOR_LOG_LEVEL: error
+      SHODAN_MAX_TLP: TLP:AMBER
+
+  connector-threatfox:
+    <<: *connector
+    image: opencti/connector-threatfox:${OPENCTI_VERSION}
+    environment:
+      <<: *connector-env
+      CONNECTOR_ID: ${CONNECTOR_THREATFOX_ID}
+      CONNECTOR_NAME: ThreatFox
+      CONNECTOR_SCOPE: threatfox
+      CONNECTOR_LOG_LEVEL: error
+      THREATFOX_INTERVAL: "3"
+
+  connector-urlhaus:
+    <<: *connector
+    image: opencti/connector-urlhaus:${OPENCTI_VERSION}
+    environment:
+      <<: *connector-env
+      CONNECTOR_ID: ${CONNECTOR_URLHAUS_ID}
+      CONNECTOR_NAME: Abuse.ch URLhaus
+      CONNECTOR_SCOPE: urlhaus
+      CONNECTOR_LOG_LEVEL: error
+      URLHAUS_INTERVAL: "3"
+      URLHAUS_CSV_URL: https://urlhaus.abuse.ch/downloads/csv_recent/
+      URLHAUS_DEFAULT_X_OPENCTI_SCORE: "80"
+      URLHAUS_IMPORT_OFFLINE: "true"
+      URLHAUS_THREATS_FROM_LABELS: "true"
+
+  # ---------------------------------------------------------------- 6. Added connectors (kept off)
+  connector-first-epss-bulk:
+    <<: *connector
+    image: opencti/connector-first-epss-bulk:${OPENCTI_VERSION}
+    profiles: [optional]
+    environment:
+      <<: *connector-env
+      CONNECTOR_ID: ${CONNECTOR_FIRST_EPSS_BULK_ID}
+      CONNECTOR_NAME: First EPSS
+      CONNECTOR_LOG_LEVEL: error
+      CONNECTOR_DURATION_PERIOD: PT24H
+      FIRST_EPSS_API_BASE_URL: https://epss.cyentia.com
+
+  connector-greynoise:
+    <<: *connector
+    image: opencti/connector-greynoise:${OPENCTI_VERSION}
+    profiles: [optional]
+    environment:
+      <<: *connector-env
+      CONNECTOR_ID: ${CONNECTOR_GREYNOISE_ID}
+      CONNECTOR_NAME: GreyNoise IP Enrichment
+      CONNECTOR_SCOPE: IPv4-Addr
+      CONNECTOR_AUTO: "false"
+      CONNECTOR_LOG_LEVEL: error
+      GREYNOISE_KEY: ""
+      GREYNOISE_MAX_TLP: TLP:AMBER
+      GREYNOISE_SIGHTING_NOT_SEEN: "false"
+      GREYNOISE_NO_SIGHTINGS: "false"
+
+  connector-ransomfeed:
+    <<: *connector
+    image: opencti/connector-ransomfeed:${OPENCTI_VERSION}
+    profiles: [optional]
+    environment:
+      <<: *connector-env
+      CONNECTOR_ID: ${CONNECTOR_RANSOMFEED_ID}
+      CONNECTOR_NAME: RansomFeed
+      CONNECTOR_SCOPE: ransomfeed
+      CONNECTOR_LOG_LEVEL: error
+      CONNECTOR_DURATION_PERIOD: PT1H
+      RANSOMFEED_API_URL: https://api.ransomfeed.it
+      RANSOMFEED_TLP_LEVEL: clear
+      RANSOMFEED_CREATE_INDICATORS: "true"
+
+  connector-ransomwarelive:
+    <<: *connector
+    image: opencti/connector-ransomwarelive:${OPENCTI_VERSION}
+    profiles: [optional]
+    environment:
+      <<: *connector-env
+      CONNECTOR_ID: ${CONNECTOR_RANSOMWARELIVE_ID}
+      CONNECTOR_NAME: Ransomware Connector
+      CONNECTOR_SCOPE: identity,domain-name,location,threat-actor,intrusion-set,campaign,report,relationship
+      CONNECTOR_LOG_LEVEL: error
+      CONNECTOR_DURATION_PERIOD: PT12H
+      RANSOMWARELIVE_API_BASE_URL: https://api.ransomware.live/v2
+      RANSOMWARELIVE_API_KEY: ""
+      RANSOMWARELIVE_CREATE_THREAT_ACTOR: "false"
+      RANSOMWARELIVE_CREATE_INTRUSION_SET: "true"
+      RANSOMWARELIVE_CREATE_CAMPAIGN: "false"
+      RANSOMWARELIVE_CREATE_REPORT: "true"
+      RANSOMWARELIVE_CREATE_LEAK_SITE_DOMAINS: "false"
+      RANSOMWARELIVE_CREATE_LEAK_POST_REFS: "false"
+      RANSOMWARELIVE_PULL_HISTORY: "false"
+      RANSOMWARELIVE_MARKING_VALUE: TLP:CLEAR
