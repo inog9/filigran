@@ -87,6 +87,12 @@ The platform talks to an OpenSearch (not the bundled Elasticsearch) over HTTPS, 
 | `OPENSEARCH_URL` | `https://<opensearch host>:9200` |
 | `OPENSEARCH_OPENCTI_PASSWORD` | password of the `opencti` user |
 
+Upstream also ships `docker-compose.opensearch.yml`, a replacement for `docker-compose.yml` that
+runs OpenSearch inside the same stack with its security plugin off, from the stock image (without
+the `ingest-attachment` plugin that OpenCTI's own test setup installs). It is not used here
+because OpenSearch runs on another host, with security on, TLS and that plugin: the base stays
+`docker-compose.yml` and only the five `ELASTICSEARCH__*` lines point to the other host.
+
 Setting up that OpenSearch server is not covered here. The bundled `elasticsearch` service is
 left untouched: it still starts, which keeps a way back. To go back to it, delete the five
 `ELASTICSEARCH__*` lines and the `volumes` entry of the platform.
