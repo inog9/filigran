@@ -245,20 +245,6 @@ services:
       RANSOMWARELIVE_PULL_HISTORY: "false"
       RANSOMWARELIVE_MARKING_VALUE: TLP:CLEAR
 
-  connector-cvelistv5:
-    <<: *connector
-    image: opencti/connector-cvelistv5:${OPENCTI_VERSION}
-    environment:
-      <<: *connector-env
-      CONNECTOR_ID: ${CONNECTOR_CVELISTV5_ID}
-      CONNECTOR_NAME: CVEProject cvelistV5
-      CONNECTOR_SCOPE: identity,vulnerability,software
-      CONNECTOR_LOG_LEVEL: error
-      CONNECTOR_DURATION_PERIOD: PT6H
-      CVELISTV5_HISTORY_START_YEAR: "2019"
-    volumes:
-      - cvelistv5-clone:/opt/cvelistV5
-
   connector-abuse-ssl:
     <<: *connector
     image: opencti/connector-abuse-ssl:${OPENCTI_VERSION}
@@ -313,6 +299,3 @@ services:
       CONNECTOR_SCOPE: malpedia
       CONNECTOR_LOG_LEVEL: error
       CONNECTOR_DURATION_PERIOD: PT24H
-
-volumes:
-  cvelistv5-clone:

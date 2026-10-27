@@ -77,7 +77,6 @@ Not in upstream. They all use `OPENCTI_ADMIN_TOKEN` and wait for the platform to
 | `connector-first-epss-bulk` | exploit prediction scores (FIRST EPSS) | yes |
 | `connector-ransomfeed` | ransomware victims (RansomFeed) | yes |
 | `connector-ransomwarelive` | ransomware victims (ransomware.live, free API without a key) | yes |
-| `connector-cvelistv5` | every CVE since 2019 (CVE Program cvelistV5); the repo clone is kept in the volume `cvelistv5-clone` | yes |
 | `connector-abuse-ssl` | botnet C2 IP addresses from abuse.ch SSLBL | yes |
 | `connector-disarm-framework` | DISARM disinformation framework | yes |
 | `connector-mitre-atlas` | MITRE ATLAS (attacks on AI/ML systems) | yes |
