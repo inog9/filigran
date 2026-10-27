@@ -5,7 +5,7 @@
 #   2. Platform          OpenCTI itself: URL, memory, Redis, search backend, published ports
 #   3. Worker and S3     one worker, S3 storage on localhost
 #   4. Switched off      the bundled Elasticsearch and the XTM One stack (profile "disabled")
-#   5. Stopped on purpose  connectors that exist but do not start (profile "optional")
+#   5. Stopped on purpose  none at the moment (profile "optional")
 #   6. Added connectors  feeds that upstream does not ship
 
 # Stops with a clear message when OPENCTI_VERSION is missing from .env (otherwise: invalid image name).
@@ -92,13 +92,10 @@ services:
   connector-mitre:
     image: opencti/connector-mitre:${OPENCTI_VERSION}
 
-  # ---------------------------------------------------------------- 5. Upstream connectors kept off
-  # Start one with: docker-compose --profile optional up -d <service>
   connector-opencti:
     image: opencti/connector-opencti:${OPENCTI_VERSION}
-    profiles: [optional]
 
-  # ---------------------------------------------------------------- 6. Added connectors (running)
+  # ---------------------------------------------------------------- 6. Added connectors
   connector-cisa-known-exploited-vulnerabilities:
     <<: *connector
     image: opencti/connector-cisa-known-exploited-vulnerabilities:${OPENCTI_VERSION}
@@ -217,11 +214,9 @@ services:
       URLHAUS_IMPORT_OFFLINE: "true"
       URLHAUS_THREATS_FROM_LABELS: "true"
 
-  # ---------------------------------------------------------------- 6. Added connectors (kept off)
   connector-first-epss-bulk:
     <<: *connector
     image: opencti/connector-first-epss-bulk:${OPENCTI_VERSION}
-    profiles: [optional]
     environment:
       <<: *connector-env
       CONNECTOR_ID: ${CONNECTOR_FIRST_EPSS_BULK_ID}
@@ -230,26 +225,9 @@ services:
       CONNECTOR_DURATION_PERIOD: PT24H
       FIRST_EPSS_API_BASE_URL: https://epss.cyentia.com
 
-  connector-greynoise:
-    <<: *connector
-    image: opencti/connector-greynoise:${OPENCTI_VERSION}
-    profiles: [optional]
-    environment:
-      <<: *connector-env
-      CONNECTOR_ID: ${CONNECTOR_GREYNOISE_ID}
-      CONNECTOR_NAME: GreyNoise IP Enrichment
-      CONNECTOR_SCOPE: IPv4-Addr
-      CONNECTOR_AUTO: "false"
-      CONNECTOR_LOG_LEVEL: error
-      GREYNOISE_KEY: ""
-      GREYNOISE_MAX_TLP: TLP:AMBER
-      GREYNOISE_SIGHTING_NOT_SEEN: "false"
-      GREYNOISE_NO_SIGHTINGS: "false"
-
   connector-ransomfeed:
     <<: *connector
     image: opencti/connector-ransomfeed:${OPENCTI_VERSION}
-    profiles: [optional]
     environment:
       <<: *connector-env
       CONNECTOR_ID: ${CONNECTOR_RANSOMFEED_ID}
@@ -264,7 +242,6 @@ services:
   connector-ransomwarelive:
     <<: *connector
     image: opencti/connector-ransomwarelive:${OPENCTI_VERSION}
-    profiles: [optional]
     environment:
       <<: *connector-env
       CONNECTOR_ID: ${CONNECTOR_RANSOMWARELIVE_ID}

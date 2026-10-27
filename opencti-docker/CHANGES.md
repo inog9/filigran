@@ -55,9 +55,9 @@ profile `disabled`, so they never start. To use XTM One, remove their `profiles`
 
 ### 5. Stopped on purpose
 
-`connector-opencti` (upstream connector) is in the profile `optional`: it exists but does not
-start, to save memory. Start it with `docker-compose --profile optional up -d connector-opencti`.
-`connector-mitre` runs (MITRE ATT&CK, the base other feeds link to).
+None at the moment: every connector in the override starts. To keep one off without deleting
+it, give it `profiles: [optional]`; start it later with
+`docker-compose --profile optional up -d <service>`.
 
 ### 6. Added connectors
 
@@ -75,10 +75,9 @@ Not in upstream. They all use `OPENCTI_ADMIN_TOKEN` and wait for the platform to
 | `connector-shodan-internetdb` | enrichment of IPv4 addresses (Shodan InternetDB) | yes |
 | `connector-threatfox` | indicators from abuse.ch ThreatFox | yes |
 | `connector-urlhaus` | malicious URLs from abuse.ch URLhaus | yes |
-| `connector-first-epss-bulk` | exploit prediction scores (FIRST EPSS) | `optional` |
-| `connector-greynoise` | enrichment of IPv4 addresses (needs a GreyNoise key) | `optional` |
-| `connector-ransomfeed` | ransomware victims (RansomFeed) | `optional` |
-| `connector-ransomwarelive` | ransomware victims (ransomware.live) | `optional` |
+| `connector-first-epss-bulk` | exploit prediction scores (FIRST EPSS) | yes |
+| `connector-ransomfeed` | ransomware victims (RansomFeed) | yes |
+| `connector-ransomwarelive` | ransomware victims (ransomware.live, free API without a key) | yes |
 
 Each one needs its own connector id in `.env` (`CONNECTOR_*_ID`, a new UUIDv4 that never changes
 afterwards).
