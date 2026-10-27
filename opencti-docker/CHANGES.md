@@ -71,7 +71,6 @@ Not in upstream. They all use `OPENCTI_ADMIN_TOKEN` and wait for the platform to
 | `connector-hygiene` | labels observables found in MISP warning lists (fewer false positives) | yes |
 | `connector-ipsum` | malicious IP addresses (IPsum, level 5) | yes |
 | `connector-red-flag-domains` | newly registered suspicious domains (red.flag.domains) | yes |
-| `connector-ransomlook` | ransomware leak sites (RansomLook) | yes |
 | `connector-shodan-internetdb` | enrichment of IPv4 addresses (Shodan InternetDB) | yes |
 | `connector-threatfox` | indicators from abuse.ch ThreatFox | yes |
 | `connector-urlhaus` | malicious URLs from abuse.ch URLhaus | yes |
@@ -82,7 +81,6 @@ Not in upstream. They all use `OPENCTI_ADMIN_TOKEN` and wait for the platform to
 | `connector-abuse-ssl` | botnet C2 IP addresses from abuse.ch SSLBL | yes |
 | `connector-disarm-framework` | DISARM disinformation framework | yes |
 | `connector-mitre-atlas` | MITRE ATLAS (attacks on AI/ML systems) | yes |
-| `connector-cyber-campaign-collection` | APT and cybercrime campaign reports (GitHub, without a token: low rate limit) | yes |
 | `connector-tweetfeed` | IOCs shared on X/Twitter (TweetFeed) | yes |
 | `connector-malpedia` | malware families (Malpedia, public data without a key) | yes |
 

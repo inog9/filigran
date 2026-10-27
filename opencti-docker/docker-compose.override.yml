@@ -161,21 +161,6 @@ services:
       DNS_TWIST_FETCH_REGISTERED: "true"
       DNS_TWIST_THREADS: "20"
 
-  connector-ransomlook:
-    <<: *connector
-    image: opencti/connector-ransomlook:${OPENCTI_VERSION}
-    environment:
-      <<: *connector-env
-      CONNECTOR_ID: ${CONNECTOR_RANSOMLOOK_ID}
-      CONNECTOR_NAME: RansomLook
-      CONNECTOR_SCOPE: artifact,attack-pattern,cryptocurrency-wallet,ipv4-addr,ipv6-addr,identity,indicator,infrastructure,intrusion-set,threat-actor,incident,malware,report,note,domain-name,url,relationship
-      CONNECTOR_LOG_LEVEL: error
-      CONNECTOR_DURATION_PERIOD: PT1H
-      RANSOMLOOK_LABELS: ransomware,ransomlook
-      RANSOMLOOK_MARKING_DEFINITION: TLP:CLEAR
-      RANSOMLOOK_IMPORT_LEAKS: "true"
-      RANSOMLOOK_CREATE_INDICATORS: "false"
-
   connector-shodan-internetdb:
     <<: *connector
     image: opencti/connector-shodan-internetdb:${OPENCTI_VERSION}
@@ -306,18 +291,6 @@ services:
       CONNECTOR_NAME: MITRE ATLAS
       CONNECTOR_LOG_LEVEL: error
       CONNECTOR_DURATION_PERIOD: P7D
-
-  connector-cyber-campaign-collection:
-    <<: *connector
-    image: opencti/connector-cyber-campaign-collection:${OPENCTI_VERSION}
-    environment:
-      <<: *connector-env
-      CONNECTOR_ID: ${CONNECTOR_CYBER_CAMPAIGN_COLLECTION_ID}
-      CONNECTOR_NAME: APT & Cybercriminals Campaign Collection
-      CONNECTOR_SCOPE: report
-      CONNECTOR_LOG_LEVEL: error
-      CYBER_MONITOR_FROM_YEAR: "2018"
-      CYBER_MONITOR_INTERVAL: "4"
 
   connector-tweetfeed:
     <<: *connector
