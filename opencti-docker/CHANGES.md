@@ -55,9 +55,9 @@ profile `disabled`, so they never start. To use XTM One, remove their `profiles`
 
 ### 5. Stopped on purpose
 
-`connector-mitre` and `connector-opencti` (upstream connectors) are in the profile `optional`:
-they exist but do not start, to save memory. Start one with
-`docker-compose --profile optional up -d connector-mitre`.
+`connector-opencti` (upstream connector) is in the profile `optional`: it exists but does not
+start, to save memory. Start it with `docker-compose --profile optional up -d connector-opencti`.
+`connector-mitre` runs (MITRE ATT&CK, the base other feeds link to).
 
 ### 6. Added connectors
 
@@ -67,6 +67,10 @@ Not in upstream. They all use `OPENCTI_ADMIN_TOKEN` and wait for the platform to
 |---|---|---|
 | `connector-cisa-known-exploited-vulnerabilities` | CISA catalog of exploited vulnerabilities | yes |
 | `connector-dnstwist` | lookalike domains of a domain (run on demand) | yes |
+| `connector-dshield` | attacking networks from SANS ISC DShield | yes |
+| `connector-hygiene` | labels observables found in MISP warning lists (fewer false positives) | yes |
+| `connector-ipsum` | malicious IP addresses (IPsum, level 5) | yes |
+| `connector-red-flag-domains` | newly registered suspicious domains (red.flag.domains) | yes |
 | `connector-ransomlook` | ransomware leak sites (RansomLook) | yes |
 | `connector-shodan-internetdb` | enrichment of IPv4 addresses (Shodan InternetDB) | yes |
 | `connector-threatfox` | indicators from abuse.ch ThreatFox | yes |

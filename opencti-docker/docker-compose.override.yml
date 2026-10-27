@@ -89,11 +89,11 @@ services:
   connector-import-file-yara:
     image: opencti/connector-import-file-yara:${OPENCTI_VERSION}
 
-  # ---------------------------------------------------------------- 5. Upstream connectors kept off
-  # Start one with: docker-compose --profile optional up -d <service>
   connector-mitre:
     image: opencti/connector-mitre:${OPENCTI_VERSION}
-    profiles: [optional]
+
+  # ---------------------------------------------------------------- 5. Upstream connectors kept off
+  # Start one with: docker-compose --profile optional up -d <service>
   connector-opencti:
     image: opencti/connector-opencti:${OPENCTI_VERSION}
     profiles: [optional]
@@ -106,6 +106,48 @@ services:
       <<: *connector-env
       CONNECTOR_ID: ${CONNECTOR_CISA_KEV_ID}
       CISA_CATALOG_URL: https://raw.githubusercontent.com/cisagov/kev-data/develop/known_exploited_vulnerabilities.json
+
+  connector-dshield:
+    <<: *connector
+    image: opencti/connector-dshield:${OPENCTI_VERSION}
+    environment:
+      <<: *connector-env
+      CONNECTOR_ID: ${CONNECTOR_DSHIELD_ID}
+      CONNECTOR_NAME: DShield
+      CONNECTOR_SCOPE: dshield
+      CONNECTOR_LOG_LEVEL: error
+      CONNECTOR_DURATION_PERIOD: P1D
+
+  connector-hygiene:
+    <<: *connector
+    image: opencti/connector-hygiene:${OPENCTI_VERSION}
+    environment:
+      <<: *connector-env
+      CONNECTOR_ID: ${CONNECTOR_HYGIENE_ID}
+      CONNECTOR_NAME: Hygiene
+      CONNECTOR_AUTO: "true"
+      CONNECTOR_LOG_LEVEL: error
+      HYGIENE_MAX_WORKERS: "10"
+
+  connector-ipsum:
+    <<: *connector
+    image: opencti/connector-ipsum:${OPENCTI_VERSION}
+    environment:
+      <<: *connector-env
+      CONNECTOR_ID: ${CONNECTOR_IPSUM_ID}
+      CONNECTOR_NAME: IPsum
+      CONNECTOR_LOG_LEVEL: error
+      CONNECTOR_DURATION_PERIOD: PT6H
+
+  connector-red-flag-domains:
+    <<: *connector
+    image: opencti/connector-red-flag-domains:${OPENCTI_VERSION}
+    environment:
+      <<: *connector-env
+      CONNECTOR_ID: ${CONNECTOR_RED_FLAG_DOMAINS_ID}
+      CONNECTOR_NAME: Red Flag Domains
+      CONNECTOR_LOG_LEVEL: error
+      CONNECTOR_DURATION_PERIOD: P1D
 
   connector-dnstwist:
     <<: *connector
