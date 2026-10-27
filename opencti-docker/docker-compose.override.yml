@@ -259,3 +259,87 @@ services:
       RANSOMWARELIVE_CREATE_LEAK_POST_REFS: "false"
       RANSOMWARELIVE_PULL_HISTORY: "false"
       RANSOMWARELIVE_MARKING_VALUE: TLP:CLEAR
+
+  connector-cvelistv5:
+    <<: *connector
+    image: opencti/connector-cvelistv5:${OPENCTI_VERSION}
+    environment:
+      <<: *connector-env
+      CONNECTOR_ID: ${CONNECTOR_CVELISTV5_ID}
+      CONNECTOR_NAME: CVEProject cvelistV5
+      CONNECTOR_SCOPE: identity,vulnerability,software
+      CONNECTOR_LOG_LEVEL: error
+      CONNECTOR_DURATION_PERIOD: PT6H
+      CVELISTV5_HISTORY_START_YEAR: "2019"
+    volumes:
+      - cvelistv5-clone:/opt/cvelistV5
+
+  connector-abuse-ssl:
+    <<: *connector
+    image: opencti/connector-abuse-ssl:${OPENCTI_VERSION}
+    environment:
+      <<: *connector-env
+      CONNECTOR_ID: ${CONNECTOR_ABUSE_SSL_ID}
+      CONNECTOR_NAME: Abuse.ch SSL Blacklist
+      CONNECTOR_SCOPE: abusessl
+      CONNECTOR_LOG_LEVEL: error
+      ABUSESSL_URL: https://sslbl.abuse.ch/blacklist/sslipblacklist.csv
+      ABUSESSL_INTERVAL: "360"
+
+  connector-disarm-framework:
+    <<: *connector
+    image: opencti/connector-disarm-framework:${OPENCTI_VERSION}
+    environment:
+      <<: *connector-env
+      CONNECTOR_ID: ${CONNECTOR_DISARM_FRAMEWORK_ID}
+      CONNECTOR_NAME: DISARM Framework
+      CONNECTOR_SCOPE: marking-definition,identity,attack-pattern,course-of-action,intrusion-set,campaign,malware,tool,report,narrative,event,channel
+      CONNECTOR_LOG_LEVEL: error
+      DISARM_FRAMEWORK_URL: https://raw.githubusercontent.com/DISARMFoundation/DISARMframeworks/main/generated_files/DISARM_STIX/DISARM.json
+
+  connector-mitre-atlas:
+    <<: *connector
+    image: opencti/connector-mitre-atlas:${OPENCTI_VERSION}
+    environment:
+      <<: *connector-env
+      CONNECTOR_ID: ${CONNECTOR_MITRE_ATLAS_ID}
+      CONNECTOR_NAME: MITRE ATLAS
+      CONNECTOR_LOG_LEVEL: error
+      CONNECTOR_DURATION_PERIOD: P7D
+
+  connector-cyber-campaign-collection:
+    <<: *connector
+    image: opencti/connector-cyber-campaign-collection:${OPENCTI_VERSION}
+    environment:
+      <<: *connector-env
+      CONNECTOR_ID: ${CONNECTOR_CYBER_CAMPAIGN_COLLECTION_ID}
+      CONNECTOR_NAME: APT & Cybercriminals Campaign Collection
+      CONNECTOR_SCOPE: report
+      CONNECTOR_LOG_LEVEL: error
+      CYBER_MONITOR_FROM_YEAR: "2018"
+      CYBER_MONITOR_INTERVAL: "4"
+
+  connector-tweetfeed:
+    <<: *connector
+    image: opencti/connector-tweetfeed:${OPENCTI_VERSION}
+    environment:
+      <<: *connector-env
+      CONNECTOR_ID: ${CONNECTOR_TWEETFEED_ID}
+      CONNECTOR_NAME: Tweetfeed
+      CONNECTOR_SCOPE: tweetfeed
+      CONNECTOR_LOG_LEVEL: error
+      CONNECTOR_DURATION_PERIOD: P1D
+
+  connector-malpedia:
+    <<: *connector
+    image: opencti/connector-malpedia:${OPENCTI_VERSION}
+    environment:
+      <<: *connector-env
+      CONNECTOR_ID: ${CONNECTOR_MALPEDIA_ID}
+      CONNECTOR_NAME: Malpedia
+      CONNECTOR_SCOPE: malpedia
+      CONNECTOR_LOG_LEVEL: error
+      CONNECTOR_DURATION_PERIOD: PT24H
+
+volumes:
+  cvelistv5-clone:

@@ -78,6 +78,13 @@ Not in upstream. They all use `OPENCTI_ADMIN_TOKEN` and wait for the platform to
 | `connector-first-epss-bulk` | exploit prediction scores (FIRST EPSS) | yes |
 | `connector-ransomfeed` | ransomware victims (RansomFeed) | yes |
 | `connector-ransomwarelive` | ransomware victims (ransomware.live, free API without a key) | yes |
+| `connector-cvelistv5` | every CVE since 2019 (CVE Program cvelistV5); the repo clone is kept in the volume `cvelistv5-clone` | yes |
+| `connector-abuse-ssl` | botnet C2 IP addresses from abuse.ch SSLBL | yes |
+| `connector-disarm-framework` | DISARM disinformation framework | yes |
+| `connector-mitre-atlas` | MITRE ATLAS (attacks on AI/ML systems) | yes |
+| `connector-cyber-campaign-collection` | APT and cybercrime campaign reports (GitHub, without a token: low rate limit) | yes |
+| `connector-tweetfeed` | IOCs shared on X/Twitter (TweetFeed) | yes |
+| `connector-malpedia` | malware families (Malpedia, public data without a key) | yes |
 
 Each one needs its own connector id in `.env` (`CONNECTOR_*_ID`, a new UUIDv4 that never changes
 afterwards).
