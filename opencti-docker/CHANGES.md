@@ -42,7 +42,7 @@ local file is appended: it replaces the sample's `COMPOSE_PROJECT_NAME=xtm`.
 
 | Service | Upstream | Here | Why |
 |---|---|---|---|
-| `worker` | 3 replicas | 1 | Memory |
+| `worker` | 3 replicas | 3 | Same as upstream (was 1 for memory; the import backlog needed more) |
 | `minio` (Silo) | port 9000 on all interfaces | `127.0.0.1:9000` | Not reachable from outside |
 
 ### 4. Switched off: Elasticsearch and the XTM One stack

@@ -50,7 +50,7 @@ services:
   worker:
     image: opencti/worker:${OPENCTI_VERSION}
     deploy:
-      replicas: 1
+      replicas: 3
 
   minio:
     image: pgsty/silo:RELEASE.2026-09-16T00-00-00Z
