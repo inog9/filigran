@@ -45,7 +45,9 @@ local file is appended: it replaces the sample's `COMPOSE_PROJECT_NAME=xtm`.
 | `worker` | 3 replicas | 1 | Memory |
 | `minio` (Silo) | port 9000 on all interfaces | `127.0.0.1:9000` | Not reachable from outside |
 
-### 4. Switched off: the XTM One stack
+### 4. Switched off: Elasticsearch and the XTM One stack
+
+`elasticsearch` is replaced by OpenSearch on another host (section 7).
 
 `xtm-one`, `xtm-one-worker`, `xtm-composer`, `pgsql-xtm-one` and `rsa-key-generator` are in the
 profile `disabled`, so they never start. To use XTM One, remove their `profiles` lines and the two
@@ -93,24 +95,13 @@ the `ingest-attachment` plugin that OpenCTI's own test setup installs). It is no
 because OpenSearch runs on another host, with security on, TLS and that plugin: the base stays
 `docker-compose.yml` and only the five `ELASTICSEARCH__*` lines point to the other host.
 
-Setting up that OpenSearch server: [`../opensearch-ec2-docker/`](../opensearch-ec2-docker/). The bundled `elasticsearch` service is
-left untouched: it still starts, which keeps a way back. To go back to it, delete the five
-`ELASTICSEARCH__*` lines and the `volumes` entry of the platform.
+Setting up that OpenSearch server: [`../opensearch-ec2-docker/`](../opensearch-ec2-docker/).
 
-To stop starting the bundled Elasticsearch at all, add this to the override (the second block is
-needed: the upstream platform waits for a healthy `elasticsearch`, and disabling the service alone
-makes Compose refuse the project):
-
-```yaml
-services:
-  elasticsearch:
-    profiles: [disabled]
-  opencti:
-    depends_on: !override
-      redis: {condition: service_healthy}
-      minio: {condition: service_healthy}
-      rabbitmq: {condition: service_healthy}
-```
+The bundled `elasticsearch` service is in the profile `disabled` (it used about 2 GB of memory
+while idle), and the platform's `depends_on` is overridden without it: the upstream platform
+waits for a healthy `elasticsearch`, and disabling the service alone makes Compose refuse the
+project. Its volume `esdata` is kept, with the data as it was on 2026-10-20. To go back to it,
+delete those two blocks, the five `ELASTICSEARCH__*` lines and the `volumes` entry of the platform.
 
 ## Upgrade OpenCTI
 

@@ -4,7 +4,7 @@
 #   1. Versions          every OpenCTI image from one variable instead of :latest
 #   2. Platform          OpenCTI itself: URL, memory, Redis, search backend, published ports
 #   3. Worker and S3     one worker, S3 storage on localhost
-#   4. Switched off      the XTM One stack (profile "disabled")
+#   4. Switched off      the bundled Elasticsearch and the XTM One stack (profile "disabled")
 #   5. Stopped on purpose  connectors that exist but do not start (profile "optional")
 #   6. Added connectors  feeds that upstream does not ship
 
@@ -40,6 +40,10 @@ services:
       ELASTICSEARCH__SSL__CA: /certs/opensearch-ca.pem
     volumes:
       - ./certs/opensearch-ca.pem:/certs/opensearch-ca.pem:ro
+    depends_on: !override   # upstream also waits for the bundled elasticsearch, switched off below
+      redis: {condition: service_healthy}
+      minio: {condition: service_healthy}
+      rabbitmq: {condition: service_healthy}
     ports: !override
       - 127.0.0.1:${OPENCTI_PORT}:8080
 
@@ -53,7 +57,9 @@ services:
     ports: !override
       - 127.0.0.1:9000:9000
 
-  # ---------------------------------------------------------------- 4. XTM One stack: not used
+  # ---------------------------------------------------------------- 4. Not used
+  elasticsearch:          # search runs on OpenSearch on another host (CHANGES.md, section 7)
+    profiles: [disabled]
   pgsql-xtm-one:
     profiles: [disabled]
   rsa-key-generator:
