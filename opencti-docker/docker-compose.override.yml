@@ -117,6 +117,8 @@ services:
       CONNECTOR_SCOPE: dshield
       CONNECTOR_LOG_LEVEL: error
       CONNECTOR_DURATION_PERIOD: P1D
+      DSHIELD_API_BASE_URL: https://feeds.dshield.org/block.txt
+      DSHIELD_TLP_LEVEL: clear
 
   connector-hygiene:
     <<: *connector
