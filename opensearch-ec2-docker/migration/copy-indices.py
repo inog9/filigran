@@ -12,6 +12,8 @@ Usage (from the OpenCTI host, which reaches both):
                     --user opencti --password-file opencti-user.env [--workers 6]
 
 --password-file holds OPENCTI_PASSWORD=... (the password is never printed).
+--source-auth also logs in to the source, for a copy between two OpenSearch nodes
+(e.g. to a lower version, where a snapshot cannot be restored).
 Standard library only.
 """
 
@@ -42,6 +44,8 @@ class Endpoint:
         if auth:
             self.headers["Authorization"] = "Basic " + base64.b64encode(auth.encode()).decode()
         self.ctx = ssl.create_default_context(cafile=ca) if self.url.scheme == "https" else None
+        if self.ctx:  # Python 3.13+ is strict by default; make-certs.sh's CA has no keyUsage
+            self.ctx.verify_flags &= ~ssl.VERIFY_X509_STRICT
         self.local = threading.local()
 
     def _conn(self) -> http.client.HTTPConnection:
@@ -155,11 +159,14 @@ def main() -> int:
     ap.add_argument("--password-file", required=True)
     ap.add_argument("--workers", type=int, default=6)
     ap.add_argument("--prefix", default="opencti")
+    ap.add_argument("--source-auth", action="store_true",
+                    help="log in to the source too (same user, password and CA): OpenSearch to OpenSearch")
     args = ap.parse_args()
     password = next(line.split("=", 1)[1].strip() for line in open(args.password_file)
                     if line.startswith("OPENCTI_PASSWORD="))
 
-    src = Endpoint(args.source)
+    src = (Endpoint(args.source, auth=f"{args.user}:{password}", ca=args.ca) if args.source_auth
+           else Endpoint(args.source))
     dst = Endpoint(args.target, auth=f"{args.user}:{password}", ca=args.ca)
     _, indices = src.request("GET", f"/_cat/indices/{args.prefix}_*?format=json&h=index,docs.count&s=index")
     total_started = time.time()

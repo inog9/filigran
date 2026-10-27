@@ -70,6 +70,11 @@ curl -s --cacert certs/root-ca.pem -u "admin:$ADMIN_PASSWORD" "https://localhost
 - **Changed a file in `security/`**: `./apply-security.sh`.
 - **Upgrade OpenSearch**: change the version in `docker-compose.yml`, then `./setup.sh`. Use the
   version OpenCTI's own test setup uses for the OpenCTI release you run.
+- **Go back to an older version** (e.g. 3.x to 2.19): OpenSearch cannot open data written by a
+  newer version, and a snapshot cannot be restored into an older one. Copy the volume as a
+  backup, start the old data as a second project on port 9201, create the new version on an
+  empty volume, then `migration/init-schema.sh` and `migration/copy-indices.py --source-auth`
+  from 9201 to 9200 (3.6 million documents: about 10 minutes).
 
 There are no backups here. To back up, stop the service (`docker compose stop`) and copy the
 volume `opencti-search_osdata`, or take a snapshot of the server's disk.

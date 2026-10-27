@@ -9,7 +9,7 @@ services:
     build:
       context: .
       args:
-        OPENSEARCH_VERSION: "3.7.0"   # the only place the version is written
+        OPENSEARCH_VERSION: "2.19.4"   # the only place the version is written
     restart: always
     environment:
       discovery.type: single-node

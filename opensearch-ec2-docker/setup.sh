@@ -21,14 +21,14 @@ sed -e "s|@ADMIN_HASH@|$ADMIN_HASH|" -e "s|@OPENCTI_HASH@|$OPENCTI_HASH|" \
 chmod 644 security/internal_users.yml   # read by the container user; hashes only
 
 docker compose up -d
-# Single node: the ISM plugin's own indices default to 1 replica, which can never be
+# Single node: the ISM and job-scheduler plugins' own indices default to 1 replica, which can never be
 # assigned here and keeps the cluster yellow. Needs the admin certificate (system indices).
 single_node_replicas() {
   local A=(curl -s -o /dev/null --cacert certs/root-ca.pem --cert certs/admin.pem --key certs/admin-key.pem
            -H "Content-Type: application/json")
   "${A[@]}" -X PUT https://localhost:9200/_cluster/settings \
     -d '{"persistent":{"plugins.index_state_management.history.number_of_replicas":0}}'
-  "${A[@]}" -X PUT "https://localhost:9200/.opendistro-ism-*/_settings?ignore_unavailable=true" \
+  "${A[@]}" -X PUT "https://localhost:9200/.opendistro-*/_settings?ignore_unavailable=true" \
     -d '{"index":{"number_of_replicas":0}}'
 }
 for _ in $(seq 1 60); do
