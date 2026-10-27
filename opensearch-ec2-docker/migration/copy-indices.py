@@ -161,12 +161,19 @@ def main() -> int:
     ap.add_argument("--prefix", default="opencti")
     ap.add_argument("--source-auth", action="store_true",
                     help="log in to the source too (same user, password and CA): OpenSearch to OpenSearch")
+    ap.add_argument("--source-ca", help="with --source-auth: the source's own CA (default: --ca)")
+    ap.add_argument("--source-password-file",
+                    help="with --source-auth: the source's own OPENCTI_PASSWORD=... (default: --password-file)")
     args = ap.parse_args()
-    password = next(line.split("=", 1)[1].strip() for line in open(args.password_file)
+
+    def read_password(path: str) -> str:
+        return next(line.split("=", 1)[1].strip() for line in open(path)
                     if line.startswith("OPENCTI_PASSWORD="))
 
-    src = (Endpoint(args.source, auth=f"{args.user}:{password}", ca=args.ca) if args.source_auth
-           else Endpoint(args.source))
+    password = read_password(args.password_file)
+    src_password = read_password(args.source_password_file) if args.source_password_file else password
+    src = (Endpoint(args.source, auth=f"{args.user}:{src_password}", ca=args.source_ca or args.ca)
+           if args.source_auth else Endpoint(args.source))
     dst = Endpoint(args.target, auth=f"{args.user}:{password}", ca=args.ca)
     _, indices = src.request("GET", f"/_cat/indices/{args.prefix}_*?format=json&h=index,docs.count&s=index")
     total_started = time.time()
